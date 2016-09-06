@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="src/com/company/java-json.jar" sourcepath="src/com/company/java-json.jar"/>
+	<classpathentry kind="lib" path="src/com/company/httpclient-4.5.2.jar" sourcepath="/Users/paul/.ideaLibSources/httpclient-4.5.2-sources.jar"/>
+	<classpathentry kind="lib" path="src/com/company/commons-codec-1.9.jar"/>
+	<classpathentry kind="lib" path="src/com/company/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="src/com/company/fluent-hc-4.5.2.jar"/>
+	<classpathentry kind="lib" path="src/com/company/httpclient-cache-4.5.2.jar"/>
+	<classpathentry kind="lib" path="src/com/company/httpclient-osgi-4.5.2.jar"/>
+	<classpathentry kind="lib" path="src/com/company/httpcore-4.4.4.jar"/>
+	<classpathentry kind="lib" path="src/com/company/httpmime-4.5.2.jar"/>
+	<classpathentry kind="output" path="out/production/anticaptcha-example"/>
+</classpath>

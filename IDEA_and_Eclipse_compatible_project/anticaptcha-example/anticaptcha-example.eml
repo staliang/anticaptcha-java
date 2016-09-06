@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component inherit-compiler-output="true" inheritJdk="true">
+	<output-test url="file://$MODULE_DIR$/out/test/anticaptcha-example"/>
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="java-json.jar" scope="COMPILE">
+		<srcroot url="jar://$MODULE_DIR$/src/com/company/java-json.jar!/"/>
+		<relative-module-src project-related="jar://$PROJECT_DIR$/src/com/company/java-json.jar!/"/>
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/java-json.jar!/"/>
+	</lib>
+	<lib name="httpclient-4.5.2.jar" scope="COMPILE">
+		<srcroot url="jar://$USER_HOME$/.ideaLibSources/httpclient-4.5.2-sources.jar!/"/>
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/httpclient-4.5.2.jar!/"/>
+	</lib>
+	<lib name="commons-codec-1.9.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/commons-codec-1.9.jar!/"/>
+	</lib>
+	<lib name="commons-logging-1.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/commons-logging-1.2.jar!/"/>
+	</lib>
+	<lib name="fluent-hc-4.5.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/fluent-hc-4.5.2.jar!/"/>
+	</lib>
+	<lib name="httpclient-cache-4.5.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/httpclient-cache-4.5.2.jar!/"/>
+	</lib>
+	<lib name="httpclient-osgi-4.5.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/httpclient-osgi-4.5.2.jar!/"/>
+	</lib>
+	<lib name="httpcore-4.4.4.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/httpcore-4.4.4.jar!/"/>
+	</lib>
+	<lib name="httpmime-4.5.2.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/src/com/company/httpmime-4.5.2.jar!/"/>
+	</lib>
+</component>
