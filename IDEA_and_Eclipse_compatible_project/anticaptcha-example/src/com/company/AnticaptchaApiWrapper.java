@@ -1,12 +1,20 @@
 package com.company;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
 import org.json.JSONObject;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 
 class AnticaptchaApiWrapper {
 
-    enum ProxyType {
-        http
-    }
+    private static HashMap<String, Boolean> HostsChecked = new HashMap<>();
 
     private static JSONObject jsonPostRequest(String host, String methodName, String postData) {
 
@@ -18,12 +26,52 @@ class AnticaptchaApiWrapper {
 
         try {
             return new JSONObject(AntigateHttpHelper.download(antigateHttpRequest).getBody());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         return null;
     }
 
-    static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) {
+    private static Boolean checkHostAndPort(String host, Integer port) {
+        if (!HostsChecked.containsKey(host)) {
+            HostsChecked.put(host, isReachable(host, port));
+        }
+
+        return HostsChecked.get(host);
+    }
+
+    private static boolean isReachable(String addr, int openPort) {
+        try {
+            try (Socket soc = new Socket()) {
+                soc.connect(new InetSocketAddress(addr, openPort), 1000);
+            }
+
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
+    static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) throws Exception {
+
+        if (proxyAddress == null || proxyAddress.length() == 0 || !checkHostAndPort(proxyAddress, proxyPort)) {
+            throw new Exception("Proxy address is incorrect!");
+        }
+
+        if (proxyPort < 1 || proxyPort > 65535) {
+            throw new Exception("Proxy port is incorrect!");
+        }
+        if (userAgent == null || userAgent.length() == 0) {
+            throw new Exception("User-Agent is incorrect!");
+        }
+        if (websiteUrl == null || websiteUrl.length() == 0 || !websiteUrl.contains(".") || !websiteUrl.contains("/") ||
+                !websiteUrl.contains("http")) {
+            throw new Exception("Website URL is incorrect!");
+        }
+
+        if (websiteKey == null || websiteKey.length() == 0) {
+            throw new Exception("Recaptcha Website Key is incorrect!");
+        }
 
         String json = "{\n" +
                 "  \"clientKey\": \"" + clientKey + "\",\n" +
@@ -49,17 +97,43 @@ class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
+        } catch (Exception ignored) {
         }
-        catch (Exception ignored) {}
 
         return null;
+    }
+
+    private static String imagePathToBase64String(String path) {
+        try {
+            return Base64.encode(Files.readAllBytes(Paths.get(path)));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body, Boolean phrase, Boolean _case, Integer numeric, Boolean math, Integer minLength, Integer maxLength) {
+    public static AnticaptchaTask createImageToTextTask(
+            String host,
+            String clientKey,
+            String pathToImageOrBase64Body,
+            Boolean phrase,
+            Boolean _case,
+            Integer numeric,
+            Boolean math,
+            Integer minLength,
+            Integer maxLength
+    ) {
+        try {
+            File f = new File(pathToImageOrBase64Body);
+
+            if (f.exists()) {
+                pathToImageOrBase64Body = imagePathToBase64String(pathToImageOrBase64Body);
+            }
+        } catch (Exception ignored) {
+        }
 
         String json = "{\n" +
                 "  \"clientKey\": \"" + clientKey + "\",\n" +
@@ -71,7 +145,7 @@ class AnticaptchaApiWrapper {
                 (math != null ? "    \"math\": \"" + math + "\",\n" : "") +
                 (minLength != null ? "    \"minLength\": " + minLength + ",\n" : "") +
                 (maxLength != null ? "    \"maxLength\": \"" + maxLength + "\",\n" : "") +
-                "    \"body\": \"" + body + "\"\n" +
+                "    \"body\": \"" + pathToImageOrBase64Body + "\"\n" +
                 "  }\n" +
                 "}";
 
@@ -84,8 +158,9 @@ class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
+        } catch (Exception ignored) {
+
         }
-        catch (Exception ignored) {}
 
         return null;
     }
@@ -162,10 +237,14 @@ class AnticaptchaApiWrapper {
                     endTime,
                     solveCount
             );
+        } catch (Exception ignored) {
         }
-        catch (Exception ignored) {}
 
         return null;
+    }
+
+    enum ProxyType {
+        http
     }
 }
 
