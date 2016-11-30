@@ -53,7 +53,20 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) throws Exception {
+    static AnticaptchaTask createNoCaptchaTask(
+            String type,
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
 
         if (proxyAddress == null || proxyAddress.length() == 0 || !checkHostAndPort(proxyAddress, proxyPort)) {
             throw new Exception("Proxy address is incorrect!");
@@ -78,9 +91,10 @@ class AnticaptchaApiWrapper {
         json.put("clientKey", clientKey);
 
         JSONObject taskJson = new JSONObject();
-        taskJson.put("type", "NoCaptchaTask");
+        taskJson.put("type", type);
         taskJson.put("websiteURL", websiteUrl);
         taskJson.put("websiteKey", websiteKey);
+        taskJson.put("websiteSToken", websiteSToken);
         taskJson.put("proxyType", proxyType.toString());
         taskJson.put("proxyAddress", proxyAddress);
         taskJson.put("proxyPort", proxyPort);
@@ -261,6 +275,110 @@ class AnticaptchaApiWrapper {
         }
 
         return null;
+    }
+
+    public static AnticaptchaTask createNoCaptchaTaskProxyless(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTaskProxyless",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                null,
+                null,
+                null,
+                null,
+                null,
+                userAgent,
+                websiteSToken
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTaskProxyless(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            String userAgent
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTaskProxyless",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                null,
+                null,
+                null,
+                null,
+                null,
+                userAgent,
+                ""
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTask(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTask",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                proxyType,
+                proxyAddress,
+                proxyPort,
+                proxyLogin,
+                proxyPassword,
+                userAgent,
+                websiteSToken
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTask(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTask",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                proxyType,
+                proxyAddress,
+                proxyPort,
+                proxyLogin,
+                proxyPassword,
+                userAgent,
+                ""
+        );
     }
 
     enum ProxyType {
