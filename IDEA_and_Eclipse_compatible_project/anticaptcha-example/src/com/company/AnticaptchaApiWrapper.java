@@ -2,6 +2,7 @@ package com.company;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -16,10 +17,10 @@ class AnticaptchaApiWrapper {
 
     private static HashMap<String, Boolean> HostsChecked = new HashMap<>();
 
-    private static JSONObject jsonPostRequest(String host, String methodName, String postData) {
+    private static JSONObject jsonPostRequest(String host, String methodName, JSONObject jsonPost) throws JSONException {
 
         AntigateHttpRequest antigateHttpRequest = new AntigateHttpRequest("http://" + host + "/" + methodName);
-        antigateHttpRequest.setRawPost(postData);
+        antigateHttpRequest.setRawPost(jsonPost.toString(4));
         antigateHttpRequest.addHeader("Content-Type", "application/json; charset=utf-8");
         antigateHttpRequest.addHeader("Accept", "application/json");
         antigateHttpRequest.setTimeout(30_000);
@@ -73,20 +74,21 @@ class AnticaptchaApiWrapper {
             throw new Exception("Recaptcha Website Key is incorrect!");
         }
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"task\": {\n" +
-                "    \"type\": \"NoCaptchaTask\",\n" +
-                "    \"websiteURL\": \"" + websiteUrl + "\",\n" +
-                "    \"websiteKey\": \"" + websiteKey + "\",\n" +
-                "    \"proxyType\": \"" + proxyType.toString() + "\",\n" +
-                "    \"proxyAddress\": \"" + proxyAddress + "\",\n" +
-                "    \"proxyPort\": " + proxyPort + ",\n" +
-                "    \"proxyLogin\": \"" + proxyLogin + "\",\n" +
-                "    \"proxyPassword\": \"" + proxyPassword + "\",\n" +
-                "    \"userAgent\": \"" + userAgent + "\"\n" +
-                "  }\n" +
-                "}";
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+
+        JSONObject taskJson = new JSONObject();
+        taskJson.put("type", "NoCaptchaTask");
+        taskJson.put("websiteURL", websiteUrl);
+        taskJson.put("websiteKey", websiteKey);
+        taskJson.put("proxyType", proxyType.toString());
+        taskJson.put("proxyAddress", proxyAddress);
+        taskJson.put("proxyPort", proxyPort);
+        taskJson.put("proxyLogin", proxyLogin);
+        taskJson.put("proxyPassword", proxyPassword);
+        taskJson.put("userAgent", userAgent);
+
+        json.put("task", taskJson);
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "createTask", json);
@@ -111,7 +113,7 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) {
+    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws JSONException {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
@@ -125,7 +127,7 @@ class AnticaptchaApiWrapper {
             Boolean math,
             Integer minLength,
             Integer maxLength
-    ) {
+    ) throws JSONException {
         try {
             File f = new File(pathToImageOrBase64Body);
 
@@ -135,19 +137,38 @@ class AnticaptchaApiWrapper {
         } catch (Exception ignored) {
         }
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"task\": {\n" +
-                "    \"type\": \"ImageToTextTask\",\n" +
-                (phrase != null ? "    \"phrase\": \"" + phrase + "\",\n" : "") +
-                (_case != null ? "    \"case\": \"" + _case + "\",\n" : "") +
-                (numeric != null ? "    \"numeric\": \"" + numeric + "\",\n" : "") +
-                (math != null ? "    \"math\": \"" + math + "\",\n" : "") +
-                (minLength != null ? "    \"minLength\": " + minLength + ",\n" : "") +
-                (maxLength != null ? "    \"maxLength\": \"" + maxLength + "\",\n" : "") +
-                "    \"body\": \"" + pathToImageOrBase64Body + "\"\n" +
-                "  }\n" +
-                "}";
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+
+        JSONObject taskJson = new JSONObject();
+        taskJson.put("type", "ImageToTextTask");
+        taskJson.put("body", pathToImageOrBase64Body);
+
+        if (phrase != null) {
+            taskJson.put("phrase", phrase);
+        }
+
+        if (_case != null) {
+            taskJson.put("case", _case);
+        }
+
+        if (numeric != null) {
+            taskJson.put("numeric", numeric);
+        }
+
+        if (math != null) {
+            taskJson.put("math", math);
+        }
+
+        if (minLength != null) {
+            taskJson.put("minLength", minLength);
+        }
+
+        if (maxLength != null) {
+            taskJson.put("maxLength", maxLength);
+        }
+
+        json.put("task", taskJson);
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "createTask", json);
@@ -165,12 +186,11 @@ class AnticaptchaApiWrapper {
         return null;
     }
 
-    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) {
+    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws JSONException {
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"taskId\": " + task.getTaskId() + "\n" +
-                "}";
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+        json.put("taskId", task.getTaskId());
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "getTaskResult", json);
