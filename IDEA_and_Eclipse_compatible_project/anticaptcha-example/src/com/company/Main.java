@@ -13,7 +13,7 @@ public class Main {
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36";
 
     public static void main(String[] args) throws Exception {
-        //noCaptchaTest();
+        noCaptchaTest();
 
         System.out.println();
         System.out.println();
