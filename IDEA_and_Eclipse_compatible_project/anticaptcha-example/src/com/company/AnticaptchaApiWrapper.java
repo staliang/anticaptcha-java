@@ -17,7 +17,7 @@ class AnticaptchaApiWrapper {
 
     private static HashMap<String, Boolean> HostsChecked = new HashMap<>();
 
-    private static JSONObject jsonPostRequest(String host, String methodName, JSONObject jsonPost) throws JSONException {
+    private static JSONObject jsonPostRequest(String host, String methodName, JSONObject jsonPost) throws Exception {
 
         AntigateHttpRequest antigateHttpRequest = new AntigateHttpRequest("http://" + host + "/" + methodName);
         antigateHttpRequest.setRawPost(jsonPost.toString(4));
@@ -27,10 +27,9 @@ class AnticaptchaApiWrapper {
 
         try {
             return new JSONObject(AntigateHttpHelper.download(antigateHttpRequest).getBody());
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-
-        return null;
     }
 
     private static Boolean checkHostAndPort(String host, Integer port) {
@@ -68,11 +67,11 @@ class AnticaptchaApiWrapper {
             String websiteSToken
     ) throws Exception {
 
-        if (proxyAddress == null || proxyAddress.length() == 0 || !checkHostAndPort(proxyAddress, proxyPort)) {
+        if (proxyType != null && (proxyAddress == null || proxyAddress.length() == 0 || !checkHostAndPort(proxyAddress, proxyPort))) {
             throw new Exception("Proxy address is incorrect!");
         }
 
-        if (proxyPort < 1 || proxyPort > 65535) {
+        if (proxyType != null && (proxyPort < 1 || proxyPort > 65535)) {
             throw new Exception("Proxy port is incorrect!");
         }
         if (userAgent == null || userAgent.length() == 0) {
@@ -95,12 +94,15 @@ class AnticaptchaApiWrapper {
         taskJson.put("websiteURL", websiteUrl);
         taskJson.put("websiteKey", websiteKey);
         taskJson.put("websiteSToken", websiteSToken);
-        taskJson.put("proxyType", proxyType.toString());
-        taskJson.put("proxyAddress", proxyAddress);
-        taskJson.put("proxyPort", proxyPort);
-        taskJson.put("proxyLogin", proxyLogin);
-        taskJson.put("proxyPassword", proxyPassword);
         taskJson.put("userAgent", userAgent);
+
+        if (proxyType != null) {
+            taskJson.put("proxyType", proxyType.toString());
+            taskJson.put("proxyAddress", proxyAddress);
+            taskJson.put("proxyPort", proxyPort);
+            taskJson.put("proxyLogin", proxyLogin);
+            taskJson.put("proxyPassword", proxyPassword);
+        }
 
         json.put("task", taskJson);
 
@@ -113,10 +115,9 @@ class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-
-        return null;
     }
 
     private static String imagePathToBase64String(String path) {
@@ -127,7 +128,7 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws JSONException {
+    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws Exception {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
@@ -141,7 +142,7 @@ class AnticaptchaApiWrapper {
             Boolean math,
             Integer minLength,
             Integer maxLength
-    ) throws JSONException {
+    ) throws Exception {
         try {
             File f = new File(pathToImageOrBase64Body);
 
@@ -193,14 +194,12 @@ class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
-        } catch (Exception ignored) {
-
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-
-        return null;
     }
 
-    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws JSONException {
+    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws Exception {
 
         JSONObject json = new JSONObject();
         json.put("clientKey", clientKey);
@@ -271,10 +270,9 @@ class AnticaptchaApiWrapper {
                     endTime,
                     solveCount
             );
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-
-        return null;
     }
 
     public static AnticaptchaTask createNoCaptchaTaskProxyless(
