@@ -11,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
-class AnticaptchaApiWrapper {
+public class AnticaptchaApiWrapper {
 
     private static HashMap<String, Boolean> HostsChecked = new HashMap<>();
 
