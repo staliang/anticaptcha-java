@@ -129,7 +129,7 @@ class AntigateHttpHelper
 
         /**
          * Apache HttpClient which will work well with any (even invalid and expired) HTTPS certificate.
-         * @return
+         * @return HttpClientBuilder
          * @throws Exception
          */
         public HttpClientBuilder getHttpsClientBuilder() throws NoSuchAlgorithmException, KeyManagementException {

@@ -1,44 +1,110 @@
 package com.anticaptcha;
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AnticaptchaApiWrapper {
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 
-    enum ProxyType {
-        http
-    }
+class AnticaptchaApiWrapper {
 
-    private static JSONObject jsonPostRequest(String host, String methodName, String postData) {
+    private static HashMap<String, Boolean> HostsChecked = new HashMap<>();
+
+    private static JSONObject jsonPostRequest(String host, String methodName, JSONObject jsonPost) throws Exception {
 
         AntigateHttpRequest antigateHttpRequest = new AntigateHttpRequest("http://" + host + "/" + methodName);
-        antigateHttpRequest.setRawPost(postData);
+        antigateHttpRequest.setRawPost(jsonPost.toString(4));
         antigateHttpRequest.addHeader("Content-Type", "application/json; charset=utf-8");
         antigateHttpRequest.addHeader("Accept", "application/json");
         antigateHttpRequest.setTimeout(30_000);
 
         try {
             return new JSONObject(AntigateHttpHelper.download(antigateHttpRequest).getBody());
-        } catch (Exception ignored) {}
-
-        return null;
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
+        }
     }
 
-    public static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) {
+    private static Boolean checkHostAndPort(String host, Integer port) {
+        if (!HostsChecked.containsKey(host)) {
+            HostsChecked.put(host, isReachable(host, port));
+        }
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"task\": {\n" +
-                "    \"type\": \"NoCaptchaTask\",\n" +
-                "    \"websiteURL\": \"" + websiteUrl + "\",\n" +
-                "    \"websiteKey\": \"" + websiteKey + "\",\n" +
-                "    \"proxyType\": \"" + proxyType.toString() + "\",\n" +
-                "    \"proxyAddress\": \"" + proxyAddress + "\",\n" +
-                "    \"proxyPort\": " + proxyPort + ",\n" +
-                "    \"proxyLogin\": \"" + proxyLogin + "\",\n" +
-                "    \"proxyPassword\": \"" + proxyPassword + "\",\n" +
-                "    \"userAgent\": \"" + userAgent + "\"\n" +
-                "  }\n" +
-                "}";
+        return HostsChecked.get(host);
+    }
+
+    private static boolean isReachable(String addr, int openPort) {
+        try {
+            try (Socket soc = new Socket()) {
+                soc.connect(new InetSocketAddress(addr, openPort), 1000);
+            }
+
+            return true;
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
+    static AnticaptchaTask createNoCaptchaTask(
+            String type,
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
+
+        if (proxyType != null && (proxyAddress == null || proxyAddress.length() == 0 || !checkHostAndPort(proxyAddress, proxyPort))) {
+            throw new Exception("Proxy address is incorrect!");
+        }
+
+        if (proxyType != null && (proxyPort < 1 || proxyPort > 65535)) {
+            throw new Exception("Proxy port is incorrect!");
+        }
+        if (userAgent == null || userAgent.length() == 0) {
+            throw new Exception("User-Agent is incorrect!");
+        }
+        if (websiteUrl == null || websiteUrl.length() == 0 || !websiteUrl.contains(".") || !websiteUrl.contains("/") ||
+                !websiteUrl.contains("http")) {
+            throw new Exception("Website URL is incorrect!");
+        }
+
+        if (websiteKey == null || websiteKey.length() == 0) {
+            throw new Exception("Recaptcha Website Key is incorrect!");
+        }
+
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+
+        JSONObject taskJson = new JSONObject();
+        taskJson.put("type", type);
+        taskJson.put("websiteURL", websiteUrl);
+        taskJson.put("websiteKey", websiteKey);
+        taskJson.put("websiteSToken", websiteSToken);
+        taskJson.put("userAgent", userAgent);
+
+        if (proxyType != null) {
+            taskJson.put("proxyType", proxyType.toString());
+            taskJson.put("proxyAddress", proxyAddress);
+            taskJson.put("proxyPort", proxyPort);
+            taskJson.put("proxyLogin", proxyLogin);
+            taskJson.put("proxyPassword", proxyPassword);
+        }
+
+        json.put("task", taskJson);
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "createTask", json);
@@ -49,31 +115,75 @@ public class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-        catch (Exception ignored) {}
-
-        return null;
     }
 
-    public static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) {
+    private static String imagePathToBase64String(String path) {
+        try {
+            return Base64.encode(Files.readAllBytes(Paths.get(path)));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws Exception {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
-    public static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body, Boolean phrase, Boolean _case, Integer numeric, Boolean math, Integer minLength, Integer maxLength) {
+    public static AnticaptchaTask createImageToTextTask(
+            String host,
+            String clientKey,
+            String pathToImageOrBase64Body,
+            Boolean phrase,
+            Boolean _case,
+            Integer numeric,
+            Boolean math,
+            Integer minLength,
+            Integer maxLength
+    ) throws Exception {
+        try {
+            File f = new File(pathToImageOrBase64Body);
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"task\": {\n" +
-                "    \"type\": \"ImageToTextTask\",\n" +
-                (phrase != null ? "    \"phrase\": \"" + phrase + "\",\n" : "") +
-                (_case != null ? "    \"case\": \"" + _case + "\",\n" : "") +
-                (numeric != null ? "    \"numeric\": \"" + numeric + "\",\n" : "") +
-                (math != null ? "    \"math\": \"" + math + "\",\n" : "") +
-                (minLength != null ? "    \"minLength\": " + minLength + ",\n" : "") +
-                (maxLength != null ? "    \"maxLength\": \"" + maxLength + "\",\n" : "") +
-                "    \"body\": \"" + body + "\"\n" +
-                "  }\n" +
-                "}";
+            if (f.exists()) {
+                pathToImageOrBase64Body = imagePathToBase64String(pathToImageOrBase64Body);
+            }
+        } catch (Exception ignored) {
+        }
+
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+
+        JSONObject taskJson = new JSONObject();
+        taskJson.put("type", "ImageToTextTask");
+        taskJson.put("body", pathToImageOrBase64Body);
+
+        if (phrase != null) {
+            taskJson.put("phrase", phrase);
+        }
+
+        if (_case != null) {
+            taskJson.put("case", _case);
+        }
+
+        if (numeric != null) {
+            taskJson.put("numeric", numeric);
+        }
+
+        if (math != null) {
+            taskJson.put("math", math);
+        }
+
+        if (minLength != null) {
+            taskJson.put("minLength", minLength);
+        }
+
+        if (maxLength != null) {
+            taskJson.put("maxLength", maxLength);
+        }
+
+        json.put("task", taskJson);
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "createTask", json);
@@ -84,18 +194,16 @@ public class AnticaptchaApiWrapper {
                     resultJson.has("errorCode") ? resultJson.getString("errorCode") : null,
                     resultJson.has("errorDescription") ? resultJson.getString("errorDescription") : null
             );
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-        catch (Exception ignored) {}
-
-        return null;
     }
 
-    public static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) {
+    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws Exception {
 
-        String json = "{\n" +
-                "  \"clientKey\": \"" + clientKey + "\",\n" +
-                "  \"taskId\": " + task.getTaskId() + "\n" +
-                "}";
+        JSONObject json = new JSONObject();
+        json.put("clientKey", clientKey);
+        json.put("taskId", task.getTaskId());
 
         try {
             JSONObject resultJson = jsonPostRequest(host, "getTaskResult", json);
@@ -162,10 +270,117 @@ public class AnticaptchaApiWrapper {
                     endTime,
                     solveCount
             );
+        } catch (Exception e) {
+            throw new Exception("Some network of JSON parse error occurred: " + e.getMessage());
         }
-        catch (Exception ignored) {}
+    }
 
-        return null;
+    public static AnticaptchaTask createNoCaptchaTaskProxyless(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTaskProxyless",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                null,
+                null,
+                null,
+                null,
+                null,
+                userAgent,
+                websiteSToken
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTaskProxyless(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            String userAgent
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTaskProxyless",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                null,
+                null,
+                null,
+                null,
+                null,
+                userAgent,
+                ""
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTask(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent,
+            String websiteSToken
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTask",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                proxyType,
+                proxyAddress,
+                proxyPort,
+                proxyLogin,
+                proxyPassword,
+                userAgent,
+                websiteSToken
+        );
+    }
+
+    public static AnticaptchaTask createNoCaptchaTask(
+            String host,
+            String clientKey,
+            String websiteUrl,
+            String websiteKey,
+            ProxyType proxyType,
+            String proxyAddress,
+            Integer proxyPort,
+            String proxyLogin,
+            String proxyPassword,
+            String userAgent
+    ) throws Exception {
+        return createNoCaptchaTask(
+                "NoCaptchaTask",
+                host,
+                clientKey,
+                websiteUrl,
+                websiteKey,
+                proxyType,
+                proxyAddress,
+                proxyPort,
+                proxyLogin,
+                proxyPassword,
+                userAgent,
+                ""
+        );
+    }
+
+    enum ProxyType {
+        http
     }
 }
 

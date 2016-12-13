@@ -23,18 +23,6 @@ class AntigateHttpRequest {
         put("Accept-Language", "ru-RU,en;q=0.8,ru;q=0.6");
     }};
 
-    private boolean noCache = false;
-    private Set<Integer> acceptedHttpCodes = new HashSet<Integer>() {{
-        add(200);
-    }};
-
-    private String urlCuttedForHash;
-    private String[] urlChangingParts = {
-            "session_id",
-            "sessionid",
-            "timestamp",
-    };
-
     AntigateHttpRequest(String url) {
         this.url = url;
     }
@@ -76,65 +64,12 @@ class AntigateHttpRequest {
         return cookies;
     }
 
-    public Set<Integer> getAcceptedHttpCodes() {
-        return acceptedHttpCodes;
-    }
-
-    public boolean isNoCache() {
-        return noCache;
-    }
-
-    public void setNoCache(boolean noCache) {
-        this.noCache = noCache;
-    }
-
     public boolean isFollowRedirects() {
         return followRedirects;
     }
 
     public Integer getMaxBodySize() {
         return maxBodySize;
-    }
-
-    public String getUrlWithoutChangingParts(String url) throws Exception {
-
-        String newUrl = url = url.toLowerCase();
-
-        for (String partToRemove : urlChangingParts) {
-
-            String[] splitted = newUrl.split(partToRemove);
-
-            if (splitted.length == 1) {
-                continue;
-            }
-
-            String firstPiece = splitted[0];
-            String secondPiece = splitted[1];
-
-            if (splitted.length > 2) {
-
-                String[] splitted2 = new String[splitted.length - 1];
-                System.arraycopy(splitted, 1, splitted2, 0, splitted2.length);
-
-                secondPiece = String.join(partToRemove, splitted2);
-            }
-
-            Integer breakpointPos = secondPiece.length();
-
-            if (secondPiece.contains("?")) {
-                breakpointPos = secondPiece.indexOf("?");
-            } else if (secondPiece.contains("&")) {
-                breakpointPos = secondPiece.indexOf("&");
-            }
-
-            newUrl = firstPiece + secondPiece.substring(breakpointPos);
-        }
-
-        if (newUrl.equals(url)) {
-            return newUrl;
-        } else {
-            return getUrlWithoutChangingParts(newUrl);
-        }
     }
 
     public void setRawPost(String post) {
@@ -154,40 +89,6 @@ class AntigateHttpRequest {
 
     public void setTimeout(Integer timeout) {
         this.timeout = timeout;
-    }
-
-    public void setMaxBodySize(Integer maxBodySize) {
-        this.maxBodySize = maxBodySize;
-    }
-
-    public void setReferer(String referer) {
-        headers.put("Referer", referer);
-    }
-
-    public void setFollowRedirects(boolean followRedirects) {
-        this.followRedirects = followRedirects;
-    }
-
-    public void setValidateTLSCertificates(boolean validateTLSCertificates) {
-        this.validateTLSCertificates = validateTLSCertificates;
-    }
-
-    public void setProxy(String proxyHost, Integer proxyPort) {
-        this.proxy = new HashMap<>();
-        this.proxy.put("host", proxyHost);
-        this.proxy.put("port", String.valueOf(proxyPort));
-    }
-
-    public void setCookies(Map<String, String> cookies) {
-        this.cookies = cookies;
-    }
-
-    public void addCookie(String key, String value) {
-        cookies.put(key, value);
-    }
-
-    public void addAcceptedHttpCode(Integer httpCode) {
-        acceptedHttpCodes.add(httpCode);
     }
 
     public void addHeader(String key, String value) {
