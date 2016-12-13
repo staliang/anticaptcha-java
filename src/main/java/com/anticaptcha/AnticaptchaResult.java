@@ -2,7 +2,7 @@ package com.anticaptcha;
 
 public class AnticaptchaResult {
 
-    enum Status {
+    public enum Status {
         ready,
         unknown, processing
     }

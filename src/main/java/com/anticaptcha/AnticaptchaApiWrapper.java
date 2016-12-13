@@ -2,7 +2,7 @@ package com.anticaptcha;
 
 import org.json.JSONObject;
 
-class AnticaptchaApiWrapper {
+public class AnticaptchaApiWrapper {
 
     enum ProxyType {
         http
@@ -23,7 +23,7 @@ class AnticaptchaApiWrapper {
         return null;
     }
 
-    static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) {
+    public static AnticaptchaTask createNoCaptchaTask(String host, String clientKey, String websiteUrl, String websiteKey, ProxyType proxyType, String proxyAddress, Integer proxyPort, String proxyLogin, String proxyPassword, String userAgent) {
 
         String json = "{\n" +
                 "  \"clientKey\": \"" + clientKey + "\",\n" +
@@ -55,11 +55,11 @@ class AnticaptchaApiWrapper {
         return null;
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) {
+    public static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body, Boolean phrase, Boolean _case, Integer numeric, Boolean math, Integer minLength, Integer maxLength) {
+    public static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body, Boolean phrase, Boolean _case, Integer numeric, Boolean math, Integer minLength, Integer maxLength) {
 
         String json = "{\n" +
                 "  \"clientKey\": \"" + clientKey + "\",\n" +
@@ -90,7 +90,7 @@ class AnticaptchaApiWrapper {
         return null;
     }
 
-    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) {
+    public static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) {
 
         String json = "{\n" +
                 "  \"clientKey\": \"" + clientKey + "\",\n" +

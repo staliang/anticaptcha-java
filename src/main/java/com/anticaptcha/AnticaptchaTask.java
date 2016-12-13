@@ -1,6 +1,6 @@
 package com.anticaptcha;
 
-class AnticaptchaTask {
+public class AnticaptchaTask {
 
     private Integer errorId;
     private Integer taskId;
