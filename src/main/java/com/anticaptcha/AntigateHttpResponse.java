@@ -1,9 +1,10 @@
 package com.anticaptcha;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.Header;
+
 import java.util.HashMap;
 import java.util.Map;
 

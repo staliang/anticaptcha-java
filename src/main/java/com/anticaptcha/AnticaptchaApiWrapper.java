@@ -1,8 +1,6 @@
 package com.anticaptcha;
 
 import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
-
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -52,7 +50,7 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaTask createNoCaptchaTask(
+    public static AnticaptchaTask createNoCaptchaTask(
             String type,
             String host,
             String clientKey,
@@ -128,7 +126,7 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws Exception {
+    public static AnticaptchaTask createImageToTextTask(String host, String clientKey, String body) throws Exception {
         return createImageToTextTask(host, clientKey, body, null, null, null, null, null, null);
     }
 
@@ -199,7 +197,7 @@ class AnticaptchaApiWrapper {
         }
     }
 
-    static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws Exception {
+    public static AnticaptchaResult getTaskResult(String host, String clientKey, AnticaptchaTask task) throws Exception {
 
         JSONObject json = new JSONObject();
         json.put("clientKey", clientKey);

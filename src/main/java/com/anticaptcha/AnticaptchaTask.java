@@ -1,7 +1,9 @@
 package com.anticaptcha;
 
-public class AnticaptchaTask {
+import lombok.Data;
 
+@Data
+public class AnticaptchaTask {
     private Integer errorId;
     private Integer taskId;
     private String errorCode;
@@ -13,31 +15,5 @@ public class AnticaptchaTask {
         this.taskId = taskId;
         this.errorCode = errorCode;
         this.errorDescription = errorDescription;
-    }
-
-    public String getErrorCode() {
-        return errorCode;
-    }
-
-    public String getErrorDescription() {
-        return errorDescription;
-    }
-
-    public Integer getTaskId() {
-        return taskId;
-    }
-
-    public Integer getErrorId() {
-        return errorId;
-    }
-
-    @Override
-    public String toString() {
-        return "AnticaptchaTask{" +
-                "errorId=" + errorId +
-                ", taskId=" + taskId +
-                ", errorCode='" + errorCode + '\'' +
-                ", errorDescription='" + errorDescription + '\'' +
-                '}';
     }
 }
