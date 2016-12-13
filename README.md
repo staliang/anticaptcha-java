@@ -7,7 +7,7 @@ Add to maven project:
 ```xml
 <repositories>
     <repository>
-        <id>antigate-java-api-mvn-repo</id>
+        <id>anticaptcha-java-mvn-repo</id>
         <url>https://raw.github.com/staliang/anticaptcha-java/mvn-repo/</url>
         <snapshots>
             <enabled>true</enabled>
