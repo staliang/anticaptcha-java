@@ -3,7 +3,6 @@ Java client for service anti-captcha.com
 Add to maven project:
 
 1) add repository
-
 ```xml
 <repositories>
     <repository>
@@ -18,7 +17,6 @@ Add to maven project:
 ```
 
 2) add dependency
-
 ```xml
 <dependencies>
     <dependency>
